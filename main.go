@@ -19,7 +19,7 @@ import (
 )
 
 func printUsageAndExit() {
-	fmt.Printf("Usage: %s KUBE-LDAP_URL", os.Args[0])
+	fmt.Printf("Usage: %s KUBE-LDAP_URL\n", os.Args[0])
 	os.Exit(-1)
 }
 
