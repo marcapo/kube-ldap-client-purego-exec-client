@@ -197,7 +197,7 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: couldn't unmarshal cache file: %s", err)
 		}
-		if authentication.Status.ExpirationTimestamp.After(time.Now()) {
+		if authentication.Status.ExpirationTimestamp.Before(time.Now()) {
 			authenticateInteractively(urlString+"/auth", cachePath)
 		} else {
 			fmt.Println(string(response))
