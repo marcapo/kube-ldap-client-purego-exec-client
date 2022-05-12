@@ -57,7 +57,7 @@ func parseAuthenticatedResponse(token string, expirationTimestamp time.Time) Aut
 
 func parseUnauthenticatedResponse(code int) AuthenticatedTemplate {
 	var template AuthenticatedTemplate
-	template.ApiVersion = "client.authentication.k8s.io/v1alpha1"
+	template.ApiVersion = "client.authentication.k8s.io/v1beta1"
 	template.Kind = "ExecCredential"
 	template.Spec = &Spec{
 		Response: &Response{
