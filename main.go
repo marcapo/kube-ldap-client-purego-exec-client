@@ -45,7 +45,7 @@ type AuthenticatedTemplate struct {
 
 func parseAuthenticatedResponse(token string, expirationTimestamp time.Time) AuthenticatedTemplate {
 	authenticatedTemplate := AuthenticatedTemplate{
-		ApiVersion: "client.authentication.k8s.io/v1alpha1",
+		ApiVersion: "client.authentication.k8s.io/v1beta1",
 		Kind:       "ExecCredential",
 		Status: &Status{
 			Token:               token,
