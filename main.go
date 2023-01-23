@@ -31,8 +31,13 @@ type Status struct {
 type Response struct {
 	Code int `json:"code,omitempty"`
 }
+
+type Cluster struct {
+	Server string `json:"server,omitempty"`
+}
 type Spec struct {
 	Response *Response `json:"response,omitempty"`
+	Cluster  Cluster   `json:"cluster,omitempty"`
 }
 
 type AuthenticatedTemplate struct {
@@ -161,15 +166,16 @@ func main() {
 		printUsageAndExit()
 	}
 
-	execInfo := os.Getenv("KUBERNETES_EXEC_INFO")
-	var spec Spec
-	if execInfo != "" {
-		err = json.Unmarshal([]byte(execInfo), &spec)
+	execInfoJSON := os.Getenv("KUBERNETES_EXEC_INFO")
+	var execCredential AuthenticatedTemplate
+	if execInfoJSON != "" {
+		err = json.Unmarshal([]byte(execInfoJSON), &execCredential)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: couldn't unmarshal KUBERNETES_EXEC_INFO: %s\n", err)
 			os.Exit(-1)
 		}
 	}
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: couldn't get user homedir: %s\n", err)
@@ -183,8 +189,17 @@ func main() {
 		}
 	}
 
-	cachePath := filepath.Join(cacheDirPath, "kube-ldap-token.yaml")
-	if _, err := os.Stat(cachePath); os.IsNotExist(err) || spec.Response != nil && spec.Response.Code == 401 {
+	cacheFilename := ""
+
+	if execCredential.Spec.Cluster.Server != "" {
+		encodedServerURL := base64.StdEncoding.EncodeToString([]byte(execCredential.Spec.Cluster.Server))
+		cacheFilename = fmt.Sprintf("kube-ldap-token-%s.yaml", encodedServerURL)
+	} else {
+		cacheFilename = "kube-ldap-token.yaml"
+	}
+	cachePath := filepath.Join(cacheDirPath, cacheFilename)
+
+	if _, err := os.Stat(cachePath); os.IsNotExist(err) || execCredential.Spec.Response != nil && execCredential.Spec.Response.Code == 401 {
 		authenticateInteractively(urlString+"/auth", cachePath)
 	} else {
 		response, err := os.ReadFile(cachePath)
