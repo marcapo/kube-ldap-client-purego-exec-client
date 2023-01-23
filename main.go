@@ -24,8 +24,8 @@ func printUsageAndExit() {
 }
 
 type Status struct {
-	Token               string     `json:"token,omitempty"`
-	ExpirationTimestamp *time.Time `json:"expirationTimestamp,omitempty"`
+	Token               string    `json:"token,omitempty"`
+	ExpirationTimestamp time.Time `json:"expirationTimestamp,omitempty"`
 }
 
 type Response struct {
@@ -36,25 +36,25 @@ type Cluster struct {
 	Server string `json:"server,omitempty"`
 }
 type Spec struct {
-	Response *Response `json:"response,omitempty"`
-	Cluster  Cluster   `json:"cluster,omitempty"`
+	Response Response `json:"response,omitempty"`
+	Cluster  Cluster  `json:"cluster,omitempty"`
 }
 
 type AuthenticatedTemplate struct {
-	ApiVersion  string  `json:"apiVersion"`
-	Kind        string  `json:"kind"`
-	Status      *Status `json:"status,omitempty"`
-	Spec        *Spec   `json:"spec,omitempty"`
-	Interactive bool    `json:"interactive,omitempty"`
+	ApiVersion  string `json:"apiVersion"`
+	Kind        string `json:"kind"`
+	Status      Status `json:"status,omitempty"`
+	Spec        Spec   `json:"spec,omitempty"`
+	Interactive bool   `json:"interactive,omitempty"`
 }
 
 func parseAuthenticatedResponse(token string, expirationTimestamp time.Time) AuthenticatedTemplate {
 	authenticatedTemplate := AuthenticatedTemplate{
 		ApiVersion: "client.authentication.k8s.io/v1beta1",
 		Kind:       "ExecCredential",
-		Status: &Status{
+		Status: Status{
 			Token:               token,
-			ExpirationTimestamp: &expirationTimestamp,
+			ExpirationTimestamp: expirationTimestamp,
 		},
 	}
 	return authenticatedTemplate
@@ -64,8 +64,8 @@ func parseUnauthenticatedResponse(code int) AuthenticatedTemplate {
 	var template AuthenticatedTemplate
 	template.ApiVersion = "client.authentication.k8s.io/v1beta1"
 	template.Kind = "ExecCredential"
-	template.Spec = &Spec{
-		Response: &Response{
+	template.Spec = Spec{
+		Response: Response{
 			Code: code,
 		},
 	}
@@ -199,7 +199,7 @@ func main() {
 	}
 	cachePath := filepath.Join(cacheDirPath, cacheFilename)
 
-	if _, err := os.Stat(cachePath); os.IsNotExist(err) || execCredential.Spec.Response != nil && execCredential.Spec.Response.Code == 401 {
+	if _, err := os.Stat(cachePath); os.IsNotExist(err) || execCredential.Spec.Response.Code == 401 {
 		authenticateInteractively(urlString+"/auth", cachePath)
 	} else {
 		response, err := os.ReadFile(cachePath)
